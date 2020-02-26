@@ -78,6 +78,14 @@
             - kubeadm
             - kubectl
 
+      - name: Create kubelet file for extra args
+        file:
+          path: /etc/default/kubelet
+          owner: root
+          group: root
+          mode: '0644'
+          state: touch
+
       - name: Configure node ip
         lineinfile:
           path: /etc/default/kubelet
@@ -89,14 +97,16 @@
           daemon_reload: yes
           state: restarted
 
-      - name: Initialize the Kubernetes cluster using kubeadm
-        command: kubeadm init --apiserver-advertise-address="192.168.50.10" --apiserver-cert-extra-sans="192.168.50.10"  --node-name k8s-master --pod-network-cidr=192.168.0.0/16
-
       - name: Copy the join command to server location
-        copy: src=join-command dest=/tmp/join-command.sh mode=0777
+        shell: "{{ item }}"
+        with_items:
+          - mv -v /mnt/join_command /mnt/join-command.sh
+          - chmod 0777 /mnt/join-command.sh
 
       - name: Join the node to cluster
-        command: sh /tmp/join-command.sh
+        shell: sh /mnt/join-command.sh
+        become: yes
+        become_user: root
 
       handlers:
           - name: docker status

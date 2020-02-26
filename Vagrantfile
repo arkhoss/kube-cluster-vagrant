@@ -11,12 +11,13 @@ Vagrant.configure("2") do |config|
 
     config.vm.define "k8s-master" do |master|
         master.vm.box = IMAGE_NAME
-        master.vm.network "private_network", ip: "192.168.50.10"
+        master.vm.network "private_network", ip: "192.168.56.10"
         master.vm.hostname = "k8s-master"
+        master.vm.synced_folder "./", "/mnt"
         master.vm.provision "ansible" do |ansible|
-            ansible.playbook = "ansible/playbooks/master-playbook.yml"
+            ansible.playbook = "ansible/playbooks/k8s-master.yml"
             ansible.extra_vars = {
-                node_ip: "192.168.50.10",
+                node_ip: "192.168.56.10",
             }
         end
     end
@@ -24,13 +25,15 @@ Vagrant.configure("2") do |config|
     (1..N).each do |i|
         config.vm.define "node-#{i}" do |node|
             node.vm.box = IMAGE_NAME
-            node.vm.network "private_network", ip: "192.168.50.#{i + 10}"
+            node.vm.network "private_network", ip: "192.168.56.#{i + 10}"
             node.vm.hostname = "node-#{i}"
+            node.vm.synced_folder "./", "/mnt"
             node.vm.provision "ansible" do |ansible|
-                ansible.playbook = "ansible/playbooks/node-playbook.yml"
+                ansible.playbook = "ansible/playbooks/k8s-nodes.yml"
                 ansible.extra_vars = {
-                    node_ip: "192.168.50.#{i + 10}",
+                    node_ip: "192.168.56.#{i + 10}",
                 }
             end
         end
     end
+end

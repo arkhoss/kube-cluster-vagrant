@@ -78,6 +78,14 @@
             - kubeadm
             - kubectl
 
+      - name: Create kubelet file for extra args
+        file:
+          path: /etc/default/kubelet
+          owner: root
+          group: root
+          mode: '0644'
+          state: touch
+
       - name: Configure node ip
         lineinfile:
           path: /etc/default/kubelet
@@ -90,7 +98,8 @@
           state: restarted
 
       - name: Initialize the Kubernetes cluster using kubeadm
-        command: kubeadm init --apiserver-advertise-address="192.168.50.10" --apiserver-cert-extra-sans="192.168.50.10"  --node-name k8s-master --pod-network-cidr=192.168.0.0/16
+        shell: kubeadm init --apiserver-advertise-address="192.168.56.10" --apiserver-cert-extra-sans="192.168.56.10"  --node-name k8s-master --pod-network-cidr=192.168.0.0/16
+        ignore_errors: yes
 
       - name: Setup kubeconfig for vagrant user
         command: "{{ item }}"
@@ -101,14 +110,12 @@
 
       - name: Install calico pod network
         become: false
-        command: kubectl create -f https://docs.projectcalico.org/v3.4/getting-started/kubernetes/installation/hosted/calico.yaml
+        shell: kubectl create -f https://docs.projectcalico.org/v3.9/manifests/calico.yaml
+        ignore_errors: yes
 
       - name: Generate join command
-        command: kubeadm token create --print-join-command
+        shell: kubeadm token create --print-join-command > /mnt/join_command
         register: join_command
-
-      - name: Copy join command to local file
-        local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"
 
       handlers:
           - name: docker status
