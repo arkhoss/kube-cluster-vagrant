@@ -32,11 +32,26 @@
           update_cache: yes
         vars:
           packages:
-          - docker-ce
-          - docker-ce-cli
+          - docker-ce=5:19.03.15~3-0~ubuntu-xenial
+          - docker-ce-cli=5:19.03.15~3-0~ubuntu-xenial
           - containerd.io
         notify:
           - docker status
+
+      - name: setup docker config
+        copy:
+          src: ../files/etc/docker/{{ item }}.j2
+          dest: /etc/docker/{{ item }}
+          owner: root
+          group: root
+          mode: 0644
+        with_items:
+          - daemon.json
+        notify:
+          - docker restart
+
+      - name: flush handlers
+        meta: flush_handlers
 
       - name: Add vagrant user to docker group
         user:
@@ -120,4 +135,7 @@
       handlers:
           - name: docker status
             service: name=docker state=started
+
+          - name: docker restart
+            service: name=docker state=restarted
 

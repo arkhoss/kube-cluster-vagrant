@@ -54,3 +54,8 @@ test/vagrant-spec/boxes/*.box
 # ansible
 *.retry
 
+# others
+config
+join-command.sh
+
+
