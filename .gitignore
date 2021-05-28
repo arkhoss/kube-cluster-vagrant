@@ -55,6 +55,7 @@ test/vagrant-spec/boxes/*.box
 *.retry
 
 # others
+*.log
 config
 join-command.sh
 
