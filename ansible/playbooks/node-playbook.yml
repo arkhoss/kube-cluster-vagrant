@@ -115,7 +115,6 @@
       - name: Copy the join command to server location
         shell: "{{ item }}"
         with_items:
-          - mv -v /mnt/join_command /mnt/join-command.sh
           - chmod 0777 /mnt/join-command.sh
 
       - name: Join the node to cluster

@@ -131,7 +131,7 @@
         ignore_errors: yes
 
       - name: Generate join command
-        shell: kubeadm token create --print-join-command > /mnt/join_command
+        shell: kubeadm token create --print-join-command > /mnt/join_command.sh
         register: join_command
 
       handlers:
