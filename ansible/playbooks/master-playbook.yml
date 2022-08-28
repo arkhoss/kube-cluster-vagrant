@@ -2,8 +2,13 @@
     - hosts: all
       become: true
       tasks:
+
+      - name: Run apt-get update
+        ansible.builtin.apt:
+          update_cache: yes
+
       - name: Install packages that allow apt to be used over HTTPS
-        apt:
+        ansible.builtin.apt:
           name: "{{ packages }}"
           state: present
           update_cache: yes
@@ -12,8 +17,14 @@
           - apt-transport-https
           - ca-certificates
           - curl
-          - gnupg-agent
+          - libassuan0
+          - libnpth0
+          - pinentry-curses
           - software-properties-common
+
+      - name: Install gnupg agent via shell
+        ansible.builtin.shell: >
+          apt-get install gnupg-agent -y
 
       - name: Add an apt signing key for Docker
         apt_key:
@@ -26,7 +37,7 @@
           state: present
 
       - name: Install docker and its dependecies
-        apt:
+        ansible.builtin.apt:
           name: "{{ packages }}"
           state: present
           update_cache: yes
@@ -83,7 +94,7 @@
           filename: kubernetes.list
 
       - name: Install Kubernetes binaries
-        apt:
+        ansible.builtin.apt:
           name: "{{ packages }}"
           state: present
           update_cache: yes
@@ -112,12 +123,23 @@
           daemon_reload: yes
           state: restarted
 
-      - name: Initialize the Kubernetes cluster using kubeadm
-        shell: kubeadm init --apiserver-advertise-address="192.200.0.10" --apiserver-cert-extra-sans="192.200.0.10"  --node-name k8s-master --pod-network-cidr="192.168.0.0/16"
+      - name: Remove containerd config
+        ansible.builtin.shell: >
+          rm -rf /etc/containerd/config.toml
         ignore_errors: yes
 
+      - name: Restart containerd
+        service:
+          name: containerd
+          daemon_reload: yes
+          state: restarted
+
+      - name: Initialize the Kubernetes cluster using kubeadm
+        ansible.builtin.shell: >
+          kubeadm init --apiserver-advertise-address={{ node_ip }} --apiserver-cert-extra-sans={{ node_ip }}  --node-name k8s-master --pod-network-cidr="192.168.60.0/24"
+
       - name: Setup kubeconfig for vagrant user
-        command: "{{ item }}"
+        ansible.builtin.shell: "{{ item }}"
         with_items:
          - mkdir -p /home/vagrant/.kube
          - cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
@@ -125,13 +147,13 @@
 
       - name: Install calico pod network
         become: false
-        shell: kubectl create -f /mnt/ansible/files/calico.yaml
+        ansible.builtin.shell: kubectl create -f /mnt/ansible/files/calico.yaml
         #if you want to use official calico manifest use line below
         # shell: kubectl create -f https://projectcalico.docs.tigera.io/manifests/calico.yaml
-        ignore_errors: yes
 
       - name: Generate join command
-        shell: kubeadm token create --print-join-command > /mnt/join-command.sh
+        ansible.builtin.shell: >
+          kubeadm token create --print-join-command > /mnt/join-command.sh
         register: join_command
 
       handlers:
@@ -140,4 +162,3 @@
 
           - name: docker restart
             service: name=docker state=restarted
-
