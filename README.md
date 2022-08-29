@@ -41,11 +41,11 @@ Oracle VirtualBox can be used as a Vagrant provider or make use of similar provi
 
 # Notes
 
-In this setup we use custom CIDR for pod cni `192.168.60.0/24` If you want to change the network range for pods, change `ansible/files/calico.yaml`
+In this setup we use custom CIDR for pod cni `192.168.61.0/24` If you want to change the network range for pods, change `ansible/files/calico.yaml`
 
 ```yaml
             - name: CALICO_IPV4POOL_CIDR
-              value: "192.168.60.0/24"
+              value: "192.168.61.0/24"
 ```
 and also update `ansible/playbooks/master-playbook.yml`
 
@@ -53,5 +53,5 @@ and also update `ansible/playbooks/master-playbook.yml`
       - name: Initialize the Kubernetes cluster using kubeadm
         register: result
         ansible.builtin.shell: >
-          kubeadm init --apiserver-advertise-address={{ node_ip }} --apiserver-cert-extra-sans={{ node_ip }}  --node-name k8s-master --pod-network-cidr="192.168.60.0/24" # <<< change this range
+          kubeadm init --apiserver-advertise-address={{ node_ip }} --apiserver-cert-extra-sans={{ node_ip }}  --node-name k8s-master --pod-network-cidr="192.168.61.0/24" # <<< change this range
 ```
