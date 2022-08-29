@@ -1,6 +1,6 @@
 IMAGE_NAME = "ubuntu/xenial64"
 
-N = 2
+N = 3
 
 Vagrant.configure("2") do |config|
     config.ssh.insert_key = false
@@ -8,6 +8,8 @@ Vagrant.configure("2") do |config|
     config.vm.provider "virtualbox" do |v|
         v.memory = 2048
         v.cpus = 2
+        v.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+        v.customize ['modifyvm', :id, '--natdnshostresolver1', 'on']
     end
 
     config.vm.define "k8s-master" do |master|
@@ -28,13 +30,13 @@ Vagrant.configure("2") do |config|
         config.vm.define "node-#{i}" do |node|
             node.vm.box = IMAGE_NAME
             node.vm.box_version = "20210209.0.0"
-            node.vm.network "private_network", ip: "192.168.60.#{i + 10}"
+            node.vm.network "private_network", ip: "192.168.60.#{i + 100}"
             node.vm.hostname = "node-#{i}"
             node.vm.synced_folder "./", "/mnt"
             node.vm.provision "ansible" do |ansible|
                 ansible.playbook = "ansible/playbooks/k8s-nodes.yml"
                 ansible.extra_vars = {
-                    node_ip: "192.168.60.#{i + 10}",
+                    node_ip: "192.168.60.#{i + 100}",
                 }
             end
         end

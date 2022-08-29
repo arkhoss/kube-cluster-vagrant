@@ -135,21 +135,34 @@
           state: restarted
 
       - name: Initialize the Kubernetes cluster using kubeadm
+        register: result
         ansible.builtin.shell: >
           kubeadm init --apiserver-advertise-address={{ node_ip }} --apiserver-cert-extra-sans={{ node_ip }}  --node-name k8s-master --pod-network-cidr="192.168.60.0/24"
+        failed_when:
+          - '"" not in result.stderr'
+          - '"already exists" not in result.stderr'
+
+      - name: Setup kubeconfig for vagrant user
+        ansible.builtin.file:
+          path: /home/vagrant/.kube
+          state: directory
+          mode: '0755'
 
       - name: Setup kubeconfig for vagrant user
         ansible.builtin.shell: "{{ item }}"
         with_items:
-         - mkdir -p /home/vagrant/.kube
-         - cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
+         - cp /etc/kubernetes/admin.conf /home/vagrant/.kube/config
          - chown vagrant:vagrant /home/vagrant/.kube/config
 
       - name: Install calico pod network
         become: false
+        register: result
         ansible.builtin.shell: kubectl create -f /mnt/ansible/files/calico.yaml
         #if you want to use official calico manifest use line below
         # shell: kubectl create -f https://projectcalico.docs.tigera.io/manifests/calico.yaml
+        failed_when:
+          - '"" not in result.stderr'
+          - '"already exists" not in result.stderr'
 
       - name: Generate join command
         ansible.builtin.shell: >

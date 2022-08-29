@@ -140,9 +140,14 @@
           - chmod 0777 /mnt/join-command.sh
 
       - name: Join the node to cluster
+        register: result
         ansible.builtin.shell: sh /mnt/join-command.sh
         become: yes
         become_user: root
+        failed_when:
+          - '"" not in result.stderr'
+          - '"already exists" not in result.stderr'
+          - '"This node has joined the cluster" not in result.stdout'
 
       handlers:
           - name: docker status
@@ -150,4 +155,3 @@
 
           - name: docker restart
             service: name=docker state=restarted
-
