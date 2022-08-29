@@ -16,7 +16,7 @@ Ansible is an infrastructure automation engine that automates software configura
 
 ## Prerequisites
 
-- Vagrant should be installed on your machine. Installation binaries can be found here.
+- Vagrant should be installed on your machine. Installation binaries can be found [here](https://www.vagrantup.com/downloads).
 Oracle VirtualBox can be used as a Vagrant provider or make use of similar providers as described in Vagrant’s official documentation.
 - Ansible should be installed in your machine. Refer to the Ansible installation guide for platform specific installation.
 

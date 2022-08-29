@@ -137,7 +137,7 @@
       - name: Initialize the Kubernetes cluster using kubeadm
         register: result
         ansible.builtin.shell: >
-          kubeadm init --apiserver-advertise-address={{ node_ip }} --apiserver-cert-extra-sans={{ node_ip }}  --node-name k8s-master --pod-network-cidr="192.168.60.0/24"
+          kubeadm init --apiserver-advertise-address={{ node_ip }} --apiserver-cert-extra-sans={{ node_ip }}  --node-name k8s-master --pod-network-cidr="192.168.61.0/24"
         failed_when:
           - '"" not in result.stderr'
           - '"already exists" not in result.stderr'

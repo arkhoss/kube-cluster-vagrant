@@ -30,13 +30,13 @@ Vagrant.configure("2") do |config|
         config.vm.define "node-#{i}" do |node|
             node.vm.box = IMAGE_NAME
             node.vm.box_version = "20210209.0.0"
-            node.vm.network "private_network", ip: "192.168.60.#{i + 100}"
+            node.vm.network "private_network", ip: "192.168.60.#{i + 13}"
             node.vm.hostname = "node-#{i}"
             node.vm.synced_folder "./", "/mnt"
             node.vm.provision "ansible" do |ansible|
                 ansible.playbook = "ansible/playbooks/k8s-nodes.yml"
                 ansible.extra_vars = {
-                    node_ip: "192.168.60.#{i + 100}",
+                    node_ip: "192.168.60.#{i + 13}",
                 }
             end
         end
